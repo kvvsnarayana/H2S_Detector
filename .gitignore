@@ -1,3 +1,4 @@
+person2-ai
 # Byte-compiled / optimized files
 __pycache__/
 *.py[cod]
@@ -49,3 +50,14 @@ data/processed/*
 !data/processed/.gitkeep
 # Pytest cache
 .pytest_cache/
+
+@"
+node_modules/
+.env
+.env.local
+database/*.db
+uploads/*
+scratch/
+*.log
+"@ | Set-Content .gitignoredatabase/*.db-*
+develop
