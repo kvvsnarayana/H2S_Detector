@@ -313,6 +313,7 @@ async function initSchema() {
  * Seed Initial Demo Data if Tables are Empty & Ensure Accounts
  */
 async function seedInitialData() {
+  // 1. Demo Data Block (Badges, Workers, Shifts, Scans)
   try {
     const workerRow = await dbInstance.get('SELECT COUNT(*) as count FROM workers');
     const workerCount = workerRow ? parseInt(workerRow.count, 10) : 0;
@@ -355,8 +356,12 @@ async function seedInitialData() {
 
       console.log(`[Database] Initial demo data seeded successfully into ${dbProvider.toUpperCase()}.`);
     }
+  } catch (err) {
+    console.error('[Database Demo Data Seed Error]:', err.message);
+  }
 
-    // Configurable Settings
+  // 2. Configurable Settings Block
+  try {
     const settingRow = await dbInstance.get('SELECT COUNT(*) as count FROM settings');
     const settingCount = settingRow ? parseInt(settingRow.count, 10) : 0;
     if (settingCount === 0) {
@@ -364,8 +369,12 @@ async function seedInitialData() {
       await dbInstance.run('INSERT INTO settings (key, value) VALUES (?, ?)', ['provisional_label', 'Provisional Exposure Estimate (Pending Laboratory/Algorithm Validation)']);
       await dbInstance.run('INSERT INTO settings (key, value) VALUES (?, ?)', ['shift_max_hours', '12']);
     }
+  } catch (err) {
+    console.error('[Database Settings Seed Error]:', err.message);
+  }
 
-    // Users - Always Ensure Admin & Worker User Accounts Exist & Are Valid
+  // 3. Admin Account Block - Always Ensure Admin User Account Exists & Is Valid
+  try {
     const adminUser = await dbInstance.get('SELECT * FROM users WHERE LOWER(username) = ?', ['admin']);
     if (!adminUser) {
       console.log(`[Database] Creating initial admin user in ${dbProvider.toUpperCase()}...`);
@@ -387,13 +396,18 @@ async function seedInitialData() {
         'admin'
       ]);
     }
+  } catch (err) {
+    console.error('[Database Admin User Seed Error]:', err.message);
+  }
 
+  // 4. Worker Accounts Block - Always Ensure Worker Accounts Exist & Are Valid
+  try {
     const workers = await dbInstance.all('SELECT worker_id, name FROM workers');
     for (const w of workers) {
-      if (!w.worker_id) continue;
-      const workerUsername = w.worker_id.toLowerCase();
+      if (!w || !w.worker_id) continue;
+      const workerUsername = String(w.worker_id).toLowerCase().trim();
       const existingWorkerUser = await dbInstance.get('SELECT * FROM users WHERE LOWER(username) = ?', [workerUsername]);
-      const defaultPin = `${w.worker_id.replace(/[^0-9]/g, '') || '101'}89!pass`;
+      const defaultPin = `${String(w.worker_id).replace(/[^0-9]/g, '') || '101'}89!pass`;
       if (!existingWorkerUser) {
         console.log(`[Database] Creating user account for worker ${w.worker_id} in ${dbProvider.toUpperCase()}...`);
         const workerCreds = hashPassword(defaultPin);
@@ -407,8 +421,12 @@ async function seedInitialData() {
         ]);
       }
     }
+  } catch (err) {
+    console.error('[Database Worker Users Seed Error]:', err.message);
+  }
 
-    // Alerts
+  // 5. Alerts Seed Block
+  try {
     const alertRow = await dbInstance.get('SELECT COUNT(*) as count FROM alerts');
     const alertCount = alertRow ? parseInt(alertRow.count, 10) : 0;
     if (alertCount === 0) {
@@ -427,12 +445,16 @@ async function seedInitialData() {
       );
     }
   } catch (err) {
-    console.error('[Database Seed Error]:', err.message);
+    console.error('[Database Alerts Seed Error]:', err.message);
   }
 }
 
-// Execute Schema Init
-initSchema();
+// Execute Schema Init & export promise
+const initPromise = initSchema();
+
+async function ensureInitialized() {
+  await initPromise;
+}
 
 module.exports = {
   db: dbInstance,
@@ -440,5 +462,6 @@ module.exports = {
   healthCheck: () => dbInstance.healthCheck(),
   hashPassword,
   verifyPassword,
-  generateRandomToken
+  generateRandomToken,
+  ensureInitialized
 };

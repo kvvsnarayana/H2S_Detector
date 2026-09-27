@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const { db, getProvider, healthCheck, hashPassword, verifyPassword, generateRandomToken } = require('./database/db');
+const { db, getProvider, healthCheck, hashPassword, verifyPassword, generateRandomToken, ensureInitialized } = require('./database/db');
 const { uploadScanImage, getStorageStatus } = require('./utils/storage');
 const { generateExcelReportBuffer } = require('./utils/excelExport');
 const { analyzeExpiryColor, CALIBRATION_POINTS } = require('./utils/expiryCalibration');
@@ -42,6 +42,7 @@ app.use(async (req, res, next) => {
   }
 
   try {
+    await ensureInitialized();
     const nowIso = new Date().toISOString();
     const session = await db.get(`
       SELECT s.token, s.role, s.worker_id, u.id as user_id, u.username, u.name
@@ -100,6 +101,7 @@ app.use('/api', (req, res, next) => {
  */
 app.post('/api/auth/login', async (req, res) => {
   try {
+    await ensureInitialized();
     const { username, password } = req.body;
     if (!username || !password) {
       return res.status(400).json({ success: false, error: 'Username and password are required.' });
@@ -108,7 +110,13 @@ app.post('/api/auth/login', async (req, res) => {
     const cleanUsername = String(username).trim().toLowerCase();
     const user = await db.get('SELECT * FROM users WHERE LOWER(username) = ?', [cleanUsername]);
 
-    if (!user || !verifyPassword(password, user.password_hash, user.salt)) {
+    let isValidPassword = false;
+    if (user) {
+      isValidPassword = verifyPassword(password, user.password_hash, user.salt) ||
+                        verifyPassword(String(password).trim(), user.password_hash, user.salt);
+    }
+
+    if (!user || !isValidPassword) {
       return res.status(401).json({ success: false, error: 'Invalid credentials. Please check username and password/PIN.' });
     }
 
