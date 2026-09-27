@@ -94,10 +94,10 @@ class PostgresAdapter {
     let translatedSql = this.translateSql(sql);
     const cleanParams = Array.isArray(params) ? params : [params];
 
-    // If INSERT and doesn't have RETURNING, append RETURNING id
-    const isInsert = /^\s*INSERT\s+INTO/i.test(translatedSql);
-    if (isInsert && !/RETURNING/i.test(translatedSql)) {
-      translatedSql += ' RETURNING id';
+    // If INSERT and doesn't have RETURNING, append RETURNING *
+    const isInsert = /\bINSERT\s+INTO\b/i.test(translatedSql);
+    if (isInsert && !/\bRETURNING\b/i.test(translatedSql)) {
+      translatedSql += ' RETURNING *';
     }
 
     const res = await this.pool.query(translatedSql, cleanParams);
@@ -105,7 +105,15 @@ class PostgresAdapter {
 
     if (res.rows && res.rows.length > 0) {
       const firstRow = res.rows[0];
-      lastInsertRowid = firstRow.id !== undefined ? firstRow.id : (firstRow.key !== undefined ? firstRow.key : firstRow[Object.keys(firstRow)[0]]);
+      if (firstRow.id !== undefined) {
+        lastInsertRowid = firstRow.id;
+      } else if (firstRow.token !== undefined) {
+        lastInsertRowid = firstRow.token;
+      } else if (firstRow.key !== undefined) {
+        lastInsertRowid = firstRow.key;
+      } else {
+        lastInsertRowid = firstRow[Object.keys(firstRow)[0]];
+      }
     }
 
     return {
@@ -139,13 +147,26 @@ class PostgresAdapter {
         },
         run: async (sql, params = []) => {
           let txSql = this.translateSql(sql);
-          if (/^\s*INSERT\s+INTO/i.test(txSql) && !/RETURNING/i.test(txSql)) {
-            txSql += ' RETURNING id';
+          if (/\bINSERT\s+INTO\b/i.test(txSql) && !/\bRETURNING\b/i.test(txSql)) {
+            txSql += ' RETURNING *';
           }
           const res = await client.query(txSql, Array.isArray(params) ? params : [params]);
+          let lastInsertRowid = null;
+          if (res.rows && res.rows.length > 0) {
+            const firstRow = res.rows[0];
+            if (firstRow.id !== undefined) {
+              lastInsertRowid = firstRow.id;
+            } else if (firstRow.token !== undefined) {
+              lastInsertRowid = firstRow.token;
+            } else if (firstRow.key !== undefined) {
+              lastInsertRowid = firstRow.key;
+            } else {
+              lastInsertRowid = firstRow[Object.keys(firstRow)[0]];
+            }
+          }
           return {
             changes: res.rowCount || 0,
-            lastInsertRowid: res.rows && res.rows[0] ? (res.rows[0].id || res.rows[0].key || null) : null
+            lastInsertRowid
           };
         },
         exec: async (sql) => client.query(sql)
