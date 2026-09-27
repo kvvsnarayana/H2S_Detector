@@ -31,8 +31,17 @@ function hashPassword(password, salt = null) {
 
 function verifyPassword(password, hash, salt) {
   if (!password || !hash || !salt) return false;
-  const verifyHash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
-  return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(verifyHash, 'hex'));
+  try {
+    const cleanHash = String(hash).trim();
+    const cleanSalt = String(salt).trim();
+    const verifyHash = crypto.pbkdf2Sync(password, cleanSalt, 10000, 64, 'sha512').toString('hex');
+    const b1 = Buffer.from(cleanHash, 'hex');
+    const b2 = Buffer.from(verifyHash, 'hex');
+    if (b1.length !== b2.length) return false;
+    return crypto.timingSafeEqual(b1, b2);
+  } catch (err) {
+    return false;
+  }
 }
 
 function generateRandomToken() {
@@ -301,7 +310,7 @@ async function initSchema() {
 }
 
 /**
- * Seed Initial Demo Data if Tables are Empty
+ * Seed Initial Demo Data if Tables are Empty & Ensure Accounts
  */
 async function seedInitialData() {
   try {
@@ -356,11 +365,10 @@ async function seedInitialData() {
       await dbInstance.run('INSERT INTO settings (key, value) VALUES (?, ?)', ['shift_max_hours', '12']);
     }
 
-    // Users
-    const userRow = await dbInstance.get('SELECT COUNT(*) as count FROM users');
-    const userCount = userRow ? parseInt(userRow.count, 10) : 0;
-    if (userCount === 0) {
-      console.log(`[Database] Seeding initial role-based users into ${dbProvider.toUpperCase()}...`);
+    // Users - Always Ensure Admin & Worker User Accounts Exist & Are Valid
+    const adminUser = await dbInstance.get('SELECT * FROM users WHERE LOWER(username) = ?', ['admin']);
+    if (!adminUser) {
+      console.log(`[Database] Creating initial admin user in ${dbProvider.toUpperCase()}...`);
       const adminCreds = hashPassword('Admin@Safety2026!');
       await dbInstance.run('INSERT INTO users (username, password_hash, salt, role, worker_id, name) VALUES (?, ?, ?, ?, ?, ?)', [
         'admin',
@@ -370,13 +378,27 @@ async function seedInitialData() {
         null,
         'Safety Officer'
       ]);
+    } else if (!verifyPassword('Admin@Safety2026!', adminUser.password_hash, adminUser.salt)) {
+      console.log(`[Database] Updating admin user credentials in ${dbProvider.toUpperCase()}...`);
+      const adminCreds = hashPassword('Admin@Safety2026!');
+      await dbInstance.run('UPDATE users SET password_hash = ?, salt = ? WHERE LOWER(username) = ?', [
+        adminCreds.hash,
+        adminCreds.salt,
+        'admin'
+      ]);
+    }
 
-      const workers = await dbInstance.all('SELECT worker_id, name FROM workers');
-      for (const w of workers) {
-        const pin = `${w.worker_id.replace(/[^0-9]/g, '') || '101'}89!pass`;
-        const workerCreds = hashPassword(pin);
+    const workers = await dbInstance.all('SELECT worker_id, name FROM workers');
+    for (const w of workers) {
+      if (!w.worker_id) continue;
+      const workerUsername = w.worker_id.toLowerCase();
+      const existingWorkerUser = await dbInstance.get('SELECT * FROM users WHERE LOWER(username) = ?', [workerUsername]);
+      const defaultPin = `${w.worker_id.replace(/[^0-9]/g, '') || '101'}89!pass`;
+      if (!existingWorkerUser) {
+        console.log(`[Database] Creating user account for worker ${w.worker_id} in ${dbProvider.toUpperCase()}...`);
+        const workerCreds = hashPassword(defaultPin);
         await dbInstance.run('INSERT INTO users (username, password_hash, salt, role, worker_id, name) VALUES (?, ?, ?, ?, ?, ?)', [
-          w.worker_id.toLowerCase(),
+          workerUsername,
           workerCreds.hash,
           workerCreds.salt,
           'worker',
