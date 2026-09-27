@@ -100,7 +100,7 @@ async function generateExcelReportBuffer(db) {
   }
 
   // 1. WORKERS WORKSHEET
-  const workers = db.prepare("SELECT * FROM workers ORDER BY id ASC").all();
+  const workers = await db.all("SELECT * FROM workers ORDER BY id ASC");
   buildSheet(
     'Workers',
     [
@@ -124,7 +124,7 @@ async function generateExcelReportBuffer(db) {
   );
 
   // 2. BADGES WORKSHEET
-  const badges = db.prepare("SELECT * FROM badges ORDER BY id ASC").all();
+  const badges = await db.all("SELECT * FROM badges ORDER BY id ASC");
   buildSheet(
     'Badges',
     [
@@ -146,12 +146,12 @@ async function generateExcelReportBuffer(db) {
   );
 
   // 3. SHIFTS WORKSHEET
-  const shifts = db.prepare(`
+  const shifts = await db.all(`
     SELECT s.*, w.name as worker_name 
     FROM shifts s 
     LEFT JOIN workers w ON s.worker_id = w.worker_id 
     ORDER BY s.id ASC
-  `).all();
+  `);
   buildSheet(
     'Shifts',
     [
@@ -179,12 +179,12 @@ async function generateExcelReportBuffer(db) {
   );
 
   // 4. SCAN RECORDS WORKSHEET
-  const scans = db.prepare(`
+  const scans = await db.all(`
     SELECT sc.*, w.name as worker_name 
     FROM scans sc 
     LEFT JOIN workers w ON sc.worker_id = w.worker_id 
     ORDER BY sc.id ASC
-  `).all();
+  `);
   buildSheet(
     'Scan Records',
     [
@@ -220,12 +220,12 @@ async function generateExcelReportBuffer(db) {
   );
 
   // 5. ALERTS WORKSHEET
-  const alerts = db.prepare(`
+  const alerts = await db.all(`
     SELECT a.*, w.name as worker_name 
     FROM alerts a 
     LEFT JOIN workers w ON a.worker_id = w.worker_id 
     ORDER BY a.id ASC
-  `).all();
+  `);
   buildSheet(
     'Alerts',
     [
