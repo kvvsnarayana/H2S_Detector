@@ -15,22 +15,100 @@
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
+  <!-- ================= BRANDED FRONTEND INITIAL LOADING OVERLAY ================= -->
+  <div id="app-loading-overlay" class="app-loading-overlay">
+    <div class="loading-content">
+      <div class="loading-logo-wrapper">
+        <img src="/images/logo.png" alt="Sulfide Sentinels Logo" class="loading-logo">
+        <div class="loading-logo-glow"></div>
+      </div>
+      <h1 class="loading-brand-title">SULFIDE SENTINELS</h1>
+      <p class="loading-brand-subtitle">H₂S EXPOSURE MONITORING</p>
+
+      <div class="loading-status-box">
+        <div class="loading-spinner"></div>
+        <div class="loading-progress-bar">
+          <div class="loading-progress-fill"></div>
+        </div>
+        <p class="loading-status-text" id="loading-status-text">Initializing safety monitoring...</p>
+      </div>
+    </div>
+  </div>
+
   <div class="background-glow"></div>
 
   <div class="app-layout">
     <!-- Top Header -->
     <header class="app-header">
-      <div class="header-brand">
+      <div class="header-brand" id="header-brand-clickable" style="cursor:pointer;" title="Sulfide Sentinels Home">
         <div class="brand-icon" style="width:36px; height:36px; display:flex; align-items:center; justify-content:center; background:transparent; box-shadow:none;">
           <img src="/images/logo.png" alt="Sulfide Sentinels App Icon" style="width:100%; height:100%; object-fit:contain; border-radius:8px;">
         </div>
         <div class="brand-titles">
           <span class="main-brand-title">SULFIDE SENTINELS</span>
-          <span class="sub-brand-title">H2S EXPOSURE MONITORING SYSTEM</span>
+          <span class="sub-brand-title">SAFER PEOPLE. CLEANER TOMORROWS.</span>
         </div>
       </div>
 
-      <div class="header-actions">
+      <!-- Public Navigation Bar (Visible when Unauthenticated) -->
+      <nav class="public-nav-bar" id="public-nav-bar">
+        <div class="desktop-public-links">
+          <a href="#view-intro" class="public-nav-link active" data-section="view-intro">Home</a>
+          <a href="#sec-sensor" class="public-nav-link" data-section="sec-sensor">Technology</a>
+          <a href="#sec-how-it-works" class="public-nav-link" data-section="sec-how-it-works">How It Works</a>
+          <a href="#sec-preview" class="public-nav-link" data-section="sec-preview">Platform</a>
+          <a href="#sec-safety" class="public-nav-link" data-section="sec-safety">Safety</a>
+          <a href="#sec-features" class="public-nav-link" data-section="sec-features">Features</a>
+        </div>
+
+        <div class="header-nav-actions" style="display:flex; align-items:center; gap:10px;">
+          <!-- Public Header Light / Dark Theme Toggle -->
+          <button type="button" class="btn-theme-toggle" id="btn-public-theme" title="Switch Light / Dark Theme" aria-label="Toggle Theme" style="background:rgba(255,255,255,0.06); border:1px solid var(--border-color); border-radius:8px; padding:6px 10px; color:var(--text-main); cursor:pointer; display:inline-flex; align-items:center; justify-content:center;">
+            <span id="public-theme-icon" style="font-size:0.95rem;">☀️</span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm btn-header-login" id="btn-header-login">
+            <span>LOGIN →</span>
+          </button>
+          <a href="#sec-sensor" class="btn btn-primary btn-sm btn-header-explore" id="btn-header-explore">
+            <span>Explore Platform</span>
+          </a>
+        </div>
+
+        <!-- Hamburger Menu Toggle Button (Mobile) -->
+        <button type="button" class="btn-hamburger-toggle" id="btn-mobile-menu-toggle" aria-label="Toggle Public Menu">
+          <span class="hamburger-bar"></span>
+          <span class="hamburger-bar"></span>
+          <span class="hamburger-bar"></span>
+        </button>
+      </nav>
+
+      <!-- Mobile Navigation Drawer Overlay (Visible when toggled on mobile) -->
+      <div class="mobile-nav-drawer hidden" id="mobile-nav-drawer">
+        <div class="mobile-nav-inner">
+          <a href="#sec-how-it-works" class="mobile-nav-link public-nav-link" data-section="sec-how-it-works">How It Works</a>
+          <a href="#sec-features" class="mobile-nav-link public-nav-link" data-section="sec-features">Features</a>
+          <a href="#sec-sensor" class="mobile-nav-link public-nav-link" data-section="sec-sensor">Physical Sensor</a>
+          <a href="#sec-safety" class="mobile-nav-link public-nav-link" data-section="sec-safety">Safety</a>
+          <div class="mobile-nav-divider"></div>
+
+          <!-- Mobile Theme Mode Selector -->
+          <div class="mobile-theme-row">
+            <span class="mobile-theme-label">Theme Mode</span>
+            <div class="mobile-theme-pills">
+              <button type="button" class="btn-theme-pill-opt" data-theme-val="light" id="btn-mob-light">☀️ Light</button>
+              <button type="button" class="btn-theme-pill-opt" data-theme-val="dark" id="btn-mob-dark">🌙 Dark</button>
+              <button type="button" class="btn-theme-pill-opt" data-theme-val="system" id="btn-mob-sys">💻 Auto</button>
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-primary btn-mobile-login" id="btn-mobile-drawer-login">
+            <span>LOGIN TO PORTAL →</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Authenticated Header Actions (Visible when Authenticated) -->
+      <div class="header-actions hidden" id="authenticated-header-actions">
         <div class="system-status-pill" id="system-status-pill">
           <span class="status-dot pulsing"></span>
           <span class="status-label" id="status-pill-text">System Active</span>
@@ -109,9 +187,722 @@
       <!-- Main Content Area -->
       <main class="content-workspace">
 
+        <!-- ================= VIEW -1: PUBLIC PRODUCT LANDING PAGE ================= -->
+        <section id="view-intro" class="content-view active">
+          <div class="intro-container">
+
+            <!-- SECTION 1: HERO -->
+            <!-- SECTION 1: CINEMATIC 3D HERO -->
+            <header class="intro-hero hero-two-column">
+              <!-- LEFT COLUMN: EDITORIAL CONTENT -->
+              <div class="hero-left-col">
+                <div class="hero-header-badge-row">
+                  <div class="intro-brand-badge">
+                    <div class="intro-logo-box">
+                      <img src="/images/logo.png" alt="Sulfide Sentinels App Icon" class="intro-logo-img">
+                    </div>
+                    <div class="intro-status-tag">
+                      <span class="status-pulse-dot"></span>
+                      PASSIVE H₂S SENSING • DIGITAL EXPOSURE RECORDS
+                    </div>
+                  </div>
+
+                  <!-- Home Page Quick Theme Toggle Options -->
+                  <div class="hero-theme-toggle-pill" id="hero-theme-pill" title="Toggle Home Page Theme">
+                    <span class="theme-pill-label">Theme:</span>
+                    <button type="button" class="btn-theme-pill-opt" data-theme-val="light" id="btn-hero-theme-light" title="Switch to Light Theme">
+                      <span>☀️</span> Light
+                    </button>
+                    <button type="button" class="btn-theme-pill-opt" data-theme-val="dark" id="btn-hero-theme-dark" title="Switch to Dark Theme">
+                      <span>🌙</span> Dark
+                    </button>
+                  </div>
+                </div>
+
+                <h1 class="intro-hero-title">
+                  See What You<br><span class="highlight-cyan">Can't Smell.</span>
+                </h1>
+
+                <p class="intro-hero-description">
+                  Sulfide Sentinels combines passive chemical sensing with intelligent analysis to make invisible H₂S exposure visible, measurable and manageable.
+                </p>
+
+                <div class="intro-hero-cta">
+                  <a href="#sec-sensor" class="btn btn-primary btn-lg hero-cta-btn">
+                    <span>Explore the Technology →</span>
+                  </a>
+                  <button type="button" class="btn btn-secondary btn-lg btn-trigger-login hero-cta-btn">
+                    <span>Enter Dashboard</span>
+                  </button>
+                </div>
+
+                <!-- 4 Technology Spec Badges Row -->
+                <div class="hero-tech-badges-row">
+                  <div class="hero-tech-badge"><span class="badge-icon">🛡️</span> Passive Chemical Sensor</div>
+                  <div class="hero-tech-badge"><span class="badge-icon">🔬</span> Optical Analysis</div>
+                  <div class="hero-tech-badge"><span class="badge-icon">📊</span> Exposure Tracking</div>
+                  <div class="hero-tech-badge"><span class="badge-icon">📋</span> Digital Records</div>
+                </div>
+
+                <div class="hero-mouse-scroll">
+                  <div class="mouse-icon"><span class="mouse-wheel"></span></div>
+                  <span class="mouse-text">SCROLL TO EXPLORE</span>
+                </div>
+              </div>
+
+              <!-- RIGHT COLUMN: 3D INTERACTIVE PRESENTATION -->
+              <div class="hero-right-col" id="hero-3d-wrapper">
+                <div class="hero-3d-container" id="hero-3d-container">
+                  <!-- 3D Toolbar: View Presets & Controls -->
+                  <div class="hero-3d-toolbar">
+                    <div class="preset-views-group">
+                      <button type="button" class="btn-preset-view active" data-preset="front" title="Front Perspective">🎯 Front</button>
+                      <button type="button" class="btn-preset-view" data-preset="closeup" title="Zoom in on H2S Sensing Strip">🔍 Strip Close-Up</button>
+                      <button type="button" class="btn-preset-view" data-preset="side" title="Side Profile">🔄 Side</button>
+                      <button type="button" class="btn-preset-view" data-preset="back" title="Rear Inspection">🔙 Back</button>
+                      <button type="button" class="btn-preset-view" data-preset="exploded" title="Exploded Layered Structure">💥 Exploded</button>
+                    </div>
+
+                    <div class="toolbar-actions-group">
+                      <button type="button" class="btn-3d-action active" id="btn-3d-autorotate" title="Toggle Auto-Rotation">🔄 Auto-Rotate</button>
+                      <button type="button" class="btn-3d-action" id="btn-3d-reset" title="Reset Camera View">↩️ Reset</button>
+                    </div>
+                  </div>
+
+                  <!-- Helpful Interaction Hint -->
+                  <div class="hero-3d-hint-pill" id="hero-3d-hint">
+                    <span class="hint-icon">🖱️</span>
+                    <span>Drag to rotate · Scroll to zoom · Explore the sensing strip</span>
+                  </div>
+
+                  <!-- 6 Clickable Component Hotspot Labels -->
+                  <div class="hero-3d-hotspot-labels">
+                    <button type="button" class="btn-comp-hotspot" data-comp="strap">01 Woven Strap</button>
+                    <button type="button" class="btn-comp-hotspot" data-comp="housing">02 Housing &amp; Bezel</button>
+                    <button type="button" class="btn-comp-hotspot active-comp-pill" data-comp="purple-pad">03 Purple Sensing Pad</button>
+                    <button type="button" class="btn-comp-hotspot" data-comp="color-scale">04 Reference Patches</button>
+                    <button type="button" class="btn-comp-hotspot" data-comp="green-indicator">05 Green Indicator</button>
+                    <button type="button" class="btn-comp-hotspot" data-comp="membrane">06 Membrane</button>
+                  </div>
+
+                  <!-- Component Explanation Popover Card -->
+                  <div class="hero-3d-popover hidden" id="hero-3d-component-popover">
+                    <div class="popover-header">
+                      <span class="popover-badge">PHYSICAL COMPONENT</span>
+                      <button type="button" class="popover-close-btn" id="btn-close-popover">&times;</button>
+                    </div>
+                    <h4 class="popover-title">Purple Chemical Sensing Pad (Left)</h4>
+                    <p class="popover-desc">Replaceable chemical reagent paper pad on the left. Darkens progressively upon occupational exposure to airborne H₂S gas.</p>
+                  </div>
+                </div>
+
+                <!-- Dedicated Physical Specification Badges Row below 3D container -->
+                <div class="hero-3d-badges-row">
+                  <div class="hero-side-pill">
+                    <span class="side-pill-icon">🟪</span>
+                    <div class="side-pill-text">
+                      <strong>Purple Sensing Pad</strong>
+                      <span>(Left Reagent Area)</span>
+                    </div>
+                  </div>
+                  <div class="hero-side-pill">
+                    <span class="side-pill-icon">🎨</span>
+                    <div class="side-pill-text">
+                      <strong>6 Color Patches</strong>
+                      <span>(Center Reference Bar)</span>
+                    </div>
+                  </div>
+                  <div class="hero-side-pill">
+                    <span class="side-pill-icon">🟩</span>
+                    <div class="side-pill-text">
+                      <strong>Green Indicator</strong>
+                      <span>(Right Validity Cue)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            <!-- DEDICATED SENSING STRIP CLOSE-UP ARCHITECTURE SHOWCASE -->
+            <div class="strip-macro-showcase-bar">
+              <div class="strip-macro-card">
+                <div class="strip-macro-img-col">
+                  <div class="macro-img-wrapper">
+                    <img src="/images/h2s_sensing_strip_closeup.jpg" alt="Actual H2S Chemical Sensing Strip Macro Photo" class="macro-strip-img">
+                    <div class="macro-badge-tag">AUTHENTIC CHEMICAL SENSING SUBSTRATE</div>
+                  </div>
+                </div>
+                <div class="strip-macro-info-col">
+                  <span class="intro-section-kicker">AUTHENTIC PHYSICAL WEARABLE</span>
+                  <h3 class="macro-info-title">The Three-Zone H₂S Sensing Architecture</h3>
+                  <p class="macro-info-desc">
+                    Passive occupational safety band engineered with zero electronics, battery, or wiring. Features a left purple chemical reagent sensing pad, a central six-patch optical color calibration bar (amber, yellow-green, green, teal, slate gray, charcoal), and a right green operational indicator pad—mounted in a low-profile ABS housing on wide woven webbing.
+                  </p>
+                  <div class="macro-spec-chips-row">
+                    <div class="macro-chip"><strong>Left:</strong> Purple Chemical Reagent Pad</div>
+                    <div class="macro-chip"><strong>Center:</strong> 6 Calibrated Color Patches</div>
+                    <div class="macro-chip"><strong>Right:</strong> Green Freshness Indicator</div>
+                    <div class="macro-chip"><strong>Mounting:</strong> Silver Bezel &amp; Woven Strap</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 2: THE HIDDEN HAZARD -->
+            <div class="intro-section" id="sec-why-h2s">
+              <div class="hidden-hazard-container">
+                <div class="hazard-content-col">
+                  <span class="intro-section-kicker">THE HIDDEN HAZARD</span>
+                  <h2 class="intro-section-title">Invisible. Odorless. <span class="highlight-cyan">Dangerous.</span></h2>
+                  <p class="hazard-description">
+                    Hydrogen sulfide (H₂S) is a toxic gas that can't be seen or smelled, but it can be life-threatening. Our solution helps you detect exposure early, stay safe, and make smarter decisions.
+                  </p>
+                  <a href="#sec-how-it-works" class="btn btn-secondary btn-sm hazard-learn-btn">
+                    <span>Learn More →</span>
+                  </a>
+
+                  <!-- 4 Feature Cards Grid -->
+                  <div class="hazard-cards-grid">
+                    <div class="hazard-card">
+                      <div class="hazard-card-icon">H₂S</div>
+                      <h4>Toxic Gas</h4>
+                      <p>(odorless &amp; invisible)</p>
+                    </div>
+                    <div class="hazard-card">
+                      <div class="hazard-card-icon">⚠️</div>
+                      <h4>High Risk</h4>
+                      <p>in industrial environments</p>
+                    </div>
+                    <div class="hazard-card">
+                      <div class="hazard-card-icon">🛡️</div>
+                      <h4>Early Detection</h4>
+                      <p>prevents serious harm</p>
+                    </div>
+                    <div class="hazard-card">
+                      <div class="hazard-card-icon">👥</div>
+                      <h4>Safer Workforce</h4>
+                      <p>&amp; healthier tomorrow</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Industrial Worker Photography Card -->
+                <div class="hazard-worker-col">
+                  <div class="hazard-worker-card">
+                    <img src="/images/worker_safety_refinery.jpg" alt="Industrial Safety Worker at Refinery" class="hazard-worker-img">
+                    <div class="hazard-worker-overlay"></div>
+                    <div class="hazard-worker-tagline">
+                      <span class="script-tagline">Real Protection</span>
+                      <span class="script-tagline-sub">for Real People</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 3: THE TECHNOLOGY — EXPLODED HARDWARE SHOWCASE -->
+            <div class="intro-section" id="sec-sensor">
+              <div class="intro-section-header">
+                <span class="intro-section-kicker">THE TECHNOLOGY</span>
+                <h2 class="intro-section-title">A Simple Design. A Smarter Solution.</h2>
+                <p class="intro-section-desc">Six carefully engineered components work together to deliver accurate, reliable H₂S exposure monitoring.</p>
+              </div>
+
+              <!-- Exploded Showcase Master Card -->
+              <div class="technology-exploded-container">
+                <div class="exploded-visual-col">
+                  <div class="exploded-photo-card">
+                    <img src="/images/exploded_sensor_tech.jpg" alt="Passive Chemical Sensing Wristband Exploded View" class="exploded-photo-img">
+                    <!-- Interactive Hotspots -->
+                    <div class="exploded-hotspots-bar">
+                      <button type="button" class="exploded-hotspot-btn active" data-component="comp-band">
+                        <span class="hotspot-num">1</span>
+                        <div class="hotspot-meta">
+                          <strong>Elastic / Velcro Band</strong>
+                          <span>(15–20 mm)</span>
+                        </div>
+                      </button>
+                      <button type="button" class="exploded-hotspot-btn" data-component="comp-plate">
+                        <span class="hotspot-num">2</span>
+                        <div class="hotspot-meta">
+                          <strong>ABS Mounting Plate</strong>
+                          <span>(durable &amp; lightweight)</span>
+                        </div>
+                      </button>
+                      <button type="button" class="exploded-hotspot-btn" data-component="comp-strip">
+                        <span class="hotspot-num">3</span>
+                        <div class="hotspot-meta">
+                          <strong>Replaceable Sensing Strip</strong>
+                          <span>(chemical reaction)</span>
+                        </div>
+                      </button>
+                      <button type="button" class="exploded-hotspot-btn" data-component="comp-scale">
+                        <span class="hotspot-num">4</span>
+                        <div class="hotspot-meta">
+                          <strong>Reference Scale</strong>
+                          <span>(color comparison)</span>
+                        </div>
+                      </button>
+                      <button type="button" class="exploded-hotspot-btn" data-component="comp-expiry">
+                        <span class="hotspot-num">5</span>
+                        <div class="hotspot-meta">
+                          <strong>Expiry Indicator</strong>
+                          <span>(visual cue)</span>
+                        </div>
+                      </button>
+                      <button type="button" class="exploded-hotspot-btn" data-component="comp-membrane">
+                        <span class="hotspot-num">6</span>
+                        <div class="hotspot-meta">
+                          <strong>Protective Membrane</strong>
+                          <span>(gas-permeable)</span>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Side: Zero Electronics Guarantee Card -->
+                <div class="exploded-sidebar-col">
+                  <div class="zero-electronics-card">
+                    <div class="zero-elec-header">
+                      <span class="zero-elec-pill">⚡ ZERO ELECTRONICS</span>
+                      <h3>Passive Chemical Badge</h3>
+                      <p>
+                        Passive chemical badge containing <strong>NO PCB, battery, wiring, LEDs, or smartwatch electronics</strong>.
+                      </p>
+                    </div>
+
+                    <div class="zero-elec-pills-grid">
+                      <div class="zero-pill">
+                        <span class="zero-icon">🔋</span>
+                        <span>No Battery</span>
+                      </div>
+                      <div class="zero-pill">
+                        <span class="zero-icon">🔌</span>
+                        <span>No Wiring</span>
+                      </div>
+                      <div class="zero-pill">
+                        <span class="zero-icon">📟</span>
+                        <span>No Electronics</span>
+                      </div>
+                      <div class="zero-pill">
+                        <span class="zero-icon">🧪</span>
+                        <span>100% Passive</span>
+                      </div>
+                    </div>
+
+                    <!-- Hidden legacy tabs container for app.js click compatibility -->
+                    <div class="sensor-selector-tabs hidden" id="sensor-tabs">
+                      <button type="button" class="sensor-tab-btn active" data-component="comp-band"></button>
+                      <button type="button" class="sensor-tab-btn" data-component="comp-plate"></button>
+                      <button type="button" class="sensor-tab-btn" data-component="comp-strip"></button>
+                      <button type="button" class="sensor-tab-btn" data-component="comp-scale"></button>
+                      <button type="button" class="sensor-tab-btn" data-component="comp-expiry"></button>
+                      <button type="button" class="sensor-tab-btn" data-component="comp-membrane"></button>
+                    </div>
+
+                    <!-- Details Card for Active Component -->
+                    <div class="sensor-detail-card" id="sensor-detail-card">
+                      <div class="comp-badge-id" id="comp-badge-id">COMPONENT 01 OF 06</div>
+                      <h4 class="comp-detail-title" id="comp-detail-title">15–20 mm Elastic / Velcro Wristband</h4>
+                      <p class="comp-detail-desc" id="comp-detail-desc">
+                        Black 15–20 mm elastic or Velcro band designed for comfortable, secure attachment over work apparel or bare wrists. Provides steady, ergonomic positioning during physical labor in plant operations.
+                      </p>
+                      <div class="comp-spec-list" id="comp-spec-list">
+                        <div class="spec-chip"><strong>Material:</strong> Heavy-duty woven elastic / Velcro</div>
+                        <div class="spec-chip"><strong>Width:</strong> 15 mm – 20 mm</div>
+                        <div class="spec-chip"><strong>Wearability:</strong> Wrist, upper arm, or chest harness</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 4: INTERACTIVE "FROM COLOR TO INSIGHT" DEMO -->
+            <div class="intro-section" id="sec-demo">
+              <div class="intro-section-header">
+                <span class="intro-section-kicker">EDUCATIONAL SIMULATION</span>
+                <h2 class="intro-section-title">From Color to Insight</h2>
+                <p class="intro-section-desc">See the change. Understand the exposure. Our optical analysis reads the color shift in the sensing strip, calculates the estimated concentration and provides cumulative exposure (ppm·h) based on shift duration.</p>
+              </div>
+
+              <div class="color-demo-card">
+                <div class="demo-top-bar">
+                  <div class="demo-badge-pill">
+                    <span class="pulse-dot-sm"></span>
+                    <span>ILLUSTRATIVE DEMO — NOT A LIVE MEASUREMENT</span>
+                  </div>
+                </div>
+
+                <!-- Interactive Controls Bar -->
+                <div class="demo-controls-bar">
+                  <div class="control-group">
+                    <label class="control-label">Exposure Level:</label>
+                    <div class="level-buttons-group">
+                      <button type="button" class="btn-level-select" data-ppm="0" data-hex="#FEF9C3">Clean (0 ppm)</button>
+                      <button type="button" class="btn-level-select" data-ppm="6.5" data-hex="#EAB308">Low (6.5 ppm)</button>
+                      <button type="button" class="btn-level-select active" data-ppm="18.2" data-hex="#CA8A04">Moderate (18.2 ppm)</button>
+                      <button type="button" class="btn-level-select" data-ppm="42.0" data-hex="#451A03">Critical (42.0 ppm)</button>
+                    </div>
+                  </div>
+
+                  <div class="control-group">
+                    <label class="control-label">Shift Duration:</label>
+                    <div class="duration-buttons-group">
+                      <button type="button" class="btn-duration-select" data-hours="4">4h</button>
+                      <button type="button" class="btn-duration-select active" data-hours="8">8h</button>
+                      <button type="button" class="btn-duration-select" data-hours="12">12h</button>
+                    </div>
+                    <!-- Legacy select hidden for app.js sync -->
+                    <select id="demo-shift-duration" class="form-control demo-select-duration hidden">
+                      <option value="4">4.0 Hours</option>
+                      <option value="8" selected>8.0 Hours</option>
+                      <option value="12">12.0 Hours</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Simulation Visual Stage -->
+                <div class="demo-stage-grid">
+                  <!-- Stage 1: Chemical Strip -->
+                  <div class="demo-stage-box">
+                    <div class="stage-header">Chemical Sensing Strip</div>
+                    <div class="demo-strip-visual">
+                      <div class="demo-strip-expiry">OK</div>
+                      <div class="demo-strip-color-zone" id="demo-strip-color-zone" style="background-color: #CA8A04;">
+                        <span class="color-hex-tag" id="demo-hex-tag">#CA8A04</span>
+                      </div>
+                      <div class="demo-strip-label">REACTION ZONE</div>
+                    </div>
+                  </div>
+
+                  <!-- Stage 2: Detected Color & Optical Breakdown -->
+                  <div class="demo-stage-box">
+                    <div class="stage-header">Detected Optical Signature</div>
+                    <div class="detected-color-card">
+                      <div class="detected-swatch-box" id="detected-swatch-box" style="background:#CA8A04;"></div>
+                      <div class="detected-info-text">
+                        <span class="detected-lbl">Detected Color</span>
+                        <strong class="detected-hex" id="detected-hex-val">#CA8A04</strong>
+                        <span class="detected-rgb" id="detected-rgb-val">RGB (202, 138, 4)</span>
+                      </div>
+                    </div>
+
+                    <!-- Reference Match Bar -->
+                    <div class="reference-match-block">
+                      <span class="ref-match-lbl">Reference Match:</span>
+                      <div class="demo-reference-scale">
+                        <div class="scale-step step-0" id="scale-step-0"><span class="scale-swatch" style="background:#FEF9C3"></span></div>
+                        <div class="scale-step step-5" id="scale-step-5"><span class="scale-swatch" style="background:#EAB308"></span></div>
+                        <div class="scale-step step-15 active" id="scale-step-15"><span class="scale-swatch" style="background:#CA8A04"></span></div>
+                        <div class="scale-step step-30" id="scale-step-30"><span class="scale-swatch" style="background:#854D0E"></span></div>
+                        <div class="scale-step step-50" id="scale-step-50"><span class="scale-swatch" style="background:#451A03"></span></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Stage 3: Estimated Dosage Output -->
+                  <div class="demo-stage-box dosage-output-box">
+                    <div class="stage-header">Calculated Exposure Dosage</div>
+                    <div class="dosage-number-display">
+                      <span class="dosage-unit-lbl">Estimated Dosage:</span>
+                      <strong class="dosage-val-number" id="demo-dosage-val">145.6 ppm·h</strong>
+                      <span class="dosage-formula-text" id="demo-calc-formula">18.2 ppm × 8.0 hrs</span>
+                    </div>
+
+                    <div class="dosage-status-badge">
+                      <span class="res-status-pill status-warn" id="demo-status-pill">MODERATE HAZARD LEVEL</span>
+                    </div>
+                    <span class="hidden" id="demo-ppm-result">18.2 ppm</span>
+                  </div>
+                </div>
+
+                <div class="demo-result-banner hidden" id="demo-result-banner"></div>
+              </div>
+            </div>
+
+            <!-- SECTION 5: THE WORKFLOW — HOW IT WORKS -->
+            <div class="intro-section" id="sec-how-it-works">
+              <div class="intro-section-header">
+                <span class="intro-section-kicker">THE WORKFLOW</span>
+                <h2 class="intro-section-title">How It Works</h2>
+                <p class="intro-section-desc">7 simple steps to safer shifts.</p>
+              </div>
+
+              <div class="workflow-story-container">
+                <!-- Connecting Cyan Progress Line -->
+                <div class="workflow-line-bg">
+                  <div class="workflow-line-fill" id="workflow-line-fill"></div>
+                </div>
+
+                <div class="workflow-steps-grid">
+                  <div class="workflow-step-card" data-step="1">
+                    <div class="wf-step-badge">01</div>
+                    <div class="wf-step-icon">📋</div>
+                    <h4>CHECK STRIP</h4>
+                    <p>Prepare badge &amp; verify strip expiration indicator.</p>
+                  </div>
+
+                  <div class="workflow-step-card" data-step="2">
+                    <div class="wf-step-badge">02</div>
+                    <div class="wf-step-icon">📷</div>
+                    <h4>PRE-SHIFT SCAN</h4>
+                    <p>Scan expiry and establish clean zero-exposure baseline.</p>
+                  </div>
+
+                  <div class="workflow-step-card" data-step="3">
+                    <div class="wf-step-badge">03</div>
+                    <div class="wf-step-icon">👷</div>
+                    <h4>WORK SHIFT</h4>
+                    <p>Wear passive chemical sensing wristband on shift.</p>
+                  </div>
+
+                  <div class="workflow-step-card" data-step="4">
+                    <div class="wf-step-badge">04</div>
+                    <div class="wf-step-icon">🏁</div>
+                    <h4>POST-SHIFT SCAN</h4>
+                    <p>Final camera scan of exposed chemical badge.</p>
+                  </div>
+
+                  <div class="workflow-step-card" data-step="5">
+                    <div class="wf-step-badge">05</div>
+                    <div class="wf-step-icon">🔬</div>
+                    <h4>COLOR ANALYSIS</h4>
+                    <p>Extract RGB values and match against reference scale.</p>
+                  </div>
+
+                  <div class="workflow-step-card" data-step="6">
+                    <div class="wf-step-badge">06</div>
+                    <div class="wf-step-icon">📊</div>
+                    <h4>EXPOSURE ASSESSMENT</h4>
+                    <p>Calculate gas concentration (ppm) &amp; shift dosage (ppm·h).</p>
+                  </div>
+
+                  <div class="workflow-step-card" data-step="7">
+                    <div class="wf-step-badge">07</div>
+                    <div class="wf-step-icon">🛡️</div>
+                    <h4>SAFETY RECORDS</h4>
+                    <p>Centralized logs, audit reports &amp; safety alerts.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 7: KEY CAPABILITIES -->
+            <div class="intro-section" id="sec-features">
+              <div class="intro-section-header">
+                <span class="intro-section-kicker">SYSTEM CAPABILITIES</span>
+                <h2 class="intro-section-title">Engineered for Industrial Safety</h2>
+                <p class="intro-section-desc">Comprehensive digital tools supporting field workers and safety management officers.</p>
+              </div>
+
+              <div class="capabilities-grid">
+                <div class="capability-card">
+                  <div class="cap-icon">🛡️</div>
+                  <h4>Strip Expiry Verification</h4>
+                  <p>Prevents uncalibrated exposure readings by detecting expired sensing strips during initial setup.</p>
+                </div>
+
+                <div class="capability-card">
+                  <div class="cap-icon">🎨</div>
+                  <h4>Optical Color Extract</h4>
+                  <p>Normalizes smartphone camera lighting variation using integrated on-badge reference swatches.</p>
+                </div>
+
+                <div class="capability-card">
+                  <div class="cap-icon">📊</div>
+                  <h4>Concentration Estimation</h4>
+                  <p>Determines estimated H₂S gas concentration in ppm via calibrated colorimetric curve interpolation.</p>
+                </div>
+
+                <div class="capability-card">
+                  <div class="cap-icon">⏱️</div>
+                  <h4>Dosage Calculation (ppm·h)</h4>
+                  <p>Calculates shift dosage to evaluate compliance against occupational safety limits.</p>
+                </div>
+
+                <div class="capability-card">
+                  <div class="cap-icon">🔔</div>
+                  <h4>Real-Time Safety Alerts</h4>
+                  <p>Instantly flags high-exposure shifts and notifies facility Safety Officers for immediate follow-up.</p>
+                </div>
+
+                <div class="capability-card">
+                  <div class="cap-icon">👥</div>
+                  <h4>Worker Roster Management</h4>
+                  <p>Tracks active personnel, badge IDs, department assignments, and historical shift logs.</p>
+                </div>
+
+                <div class="capability-card">
+                  <div class="cap-icon">📈</div>
+                  <h4>Safety Officer Portal</h4>
+                  <p>Centralized compliance dashboard providing workforce hazard analytics and risk trends.</p>
+                </div>
+
+                <div class="capability-card">
+                  <div class="cap-icon">📥</div>
+                  <h4>Auditable Excel Reports</h4>
+                  <p>Export structured CSV and Excel reports for regulatory compliance and safety audit archives.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 8: WORKER / SAFETY OFFICER PREVIEW SWITCH -->
+            <div class="intro-section" id="sec-preview">
+              <div class="intro-section-header">
+                <span class="intro-section-kicker">PLATFORM EXPERIENCE</span>
+                <h2 class="intro-section-title">Two Dedicated Portals</h2>
+                <p class="intro-section-desc">Explore how field workers and facility safety officers interact with Sulfide Sentinels.</p>
+              </div>
+
+              <div class="preview-switcher-card">
+                <div class="preview-tabs-nav">
+                  <button type="button" class="preview-tab-btn active" id="btn-preview-worker">
+                    👤 WORKER PORTAL EXPERIENCE
+                  </button>
+                  <button type="button" class="preview-tab-btn" id="btn-preview-admin">
+                    🛡️ SAFETY OFFICER PORTAL EXPERIENCE
+                  </button>
+                </div>
+
+                <!-- Worker Preview Panel -->
+                <div class="preview-panel-content active" id="panel-preview-worker">
+                  <div class="mock-interface-header">
+                    <span class="mock-brand">Sulfide Sentinels — Worker Experience</span>
+                    <span class="mock-badge">Role: Field Worker</span>
+                  </div>
+                  <div class="mock-interface-body">
+                    <div class="mock-stats-row">
+                      <div class="mock-stat">
+                        <span class="lbl">Active Badge</span>
+                        <span class="val text-cyan">BADGE-H2S-882</span>
+                      </div>
+                      <div class="mock-stat">
+                        <span class="lbl">Last Shift Conc.</span>
+                        <span class="val text-emerald">2.1 ppm (Safe)</span>
+                      </div>
+                      <div class="mock-stat">
+                        <span class="lbl">Last Shift Dosage</span>
+                        <span class="val text-emerald">16.8 ppm·h</span>
+                      </div>
+                    </div>
+                    <div class="mock-actions-row">
+                      <button type="button" class="btn btn-primary btn-sm btn-trigger-login">📷 Perform Pre-Shift Scan</button>
+                      <button type="button" class="btn btn-secondary btn-sm btn-trigger-login">🏁 Perform Post-Shift Scan</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Safety Officer Preview Panel -->
+                <div class="preview-panel-content hidden" id="panel-preview-admin">
+                  <div class="mock-interface-header">
+                    <span class="mock-brand">Sulfide Sentinels — Safety Officer Management</span>
+                    <span class="mock-badge">Role: Administrator / Safety Officer</span>
+                  </div>
+                  <div class="mock-interface-body">
+                    <div class="mock-stats-row">
+                      <div class="mock-stat">
+                        <span class="lbl">Total Active Workforce</span>
+                        <span class="val text-cyan">24 Personnel</span>
+                      </div>
+                      <div class="mock-stat">
+                        <span class="lbl">Active Shifts</span>
+                        <span class="val text-amber">12 In Progress</span>
+                      </div>
+                      <div class="mock-stat">
+                        <span class="lbl">Alert Notifications</span>
+                        <span class="val text-danger">1 Pending Review</span>
+                      </div>
+                    </div>
+                    <div class="mock-actions-row">
+                      <button type="button" class="btn btn-primary btn-sm btn-trigger-login">➕ Register New Worker</button>
+                      <button type="button" class="btn btn-secondary btn-sm btn-trigger-login">📊 Export Excel Compliance Log</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 9: SAFETY AND LIMITATIONS -->
+            <div class="intro-section" id="sec-safety">
+              <div class="intro-section-header">
+                <span class="intro-section-kicker">FUNCTIONAL SAFETY &amp; SCOPE</span>
+                <h2 class="intro-section-title">Safety Considerations &amp; Design Scope</h2>
+                <p class="intro-section-desc">Clear guidelines regarding the physical sensing badge and system capabilities.</p>
+              </div>
+
+              <div class="safety-guidelines-box">
+                <div class="safety-item">
+                  <div class="safety-icon">🛡️</div>
+                  <div>
+                    <h4>Gas-Permeable Membrane Protection</h4>
+                    <p>The thin protective membrane allows H₂S gas access to the chemical sensing strip while helping protect the sensing substrate from liquid water splash, sweat, and environmental dust. It is designed for ambient industrial workplace screening.</p>
+                  </div>
+                </div>
+
+                <div class="safety-item">
+                  <div class="safety-icon">⚠️</div>
+                  <div>
+                    <h4>Colorimetric Screening Scope</h4>
+                    <p>Sulfide Sentinels provides passive chemical exposure assessment and digital safety management logging. It is designed to complement—not replace—certified personal electronic real-time gas alarms and facility safety procedures.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 10: FINAL CALL TO ACTION -->
+            <div class="intro-cta-box">
+              <h2 class="intro-cta-title">Elevate Workplace H₂S Exposure Intelligence</h2>
+              <p class="intro-cta-text">Access the field worker scan portal or facility safety officer dashboard.</p>
+              <button type="button" class="btn btn-primary btn-lg btn-trigger-login">
+                <span>Access the Platform →</span>
+              </button>
+            </div>
+
+            <!-- SECTION 11: PROFESSIONAL FOOTER -->
+            <footer class="public-footer">
+              <div class="footer-inner">
+                <div class="footer-brand-col">
+                  <div class="footer-logo-row">
+                    <img src="/images/logo.png" alt="Sulfide Sentinels Logo" class="footer-logo-img">
+                    <span class="footer-title">SULFIDE SENTINELS</span>
+                  </div>
+                  <p class="footer-desc">H₂S Exposure Monitoring &amp; Digital Safety Management System.</p>
+                </div>
+
+                <div class="footer-links-col">
+                  <h5>Navigation</h5>
+                  <a href="#sec-why-h2s">Why H₂S Monitoring</a>
+                  <a href="#sec-sensor">Physical Sensor</a>
+                  <a href="#sec-demo">Color Analysis Demo</a>
+                  <a href="#sec-how-it-works">7-Step Workflow</a>
+                  <a href="#sec-features">System Capabilities</a>
+                  <a href="#sec-safety">Functional Safety</a>
+                </div>
+
+                <div class="footer-access-col">
+                  <h5>System Access</h5>
+                  <button type="button" class="btn btn-primary btn-sm btn-trigger-login">Portal Sign In →</button>
+                  <p class="footer-role-note">Worker &amp; Safety Officer Authentication</p>
+                </div>
+              </div>
+
+              <div class="footer-bottom-bar">
+                <span>© 2026 Sulfide Sentinels. All rights reserved. Industrial Exposure Intelligence.</span>
+                <span class="footer-status-pill"><span class="status-dot-sm"></span> System Operational</span>
+              </div>
+            </footer>
+
+          </div>
+        </section>
+
         <!-- ================= VIEW 0: ROLE-BASED LOGIN ================= -->
-        <section id="view-login" class="content-view active">
+        <section id="view-login" class="content-view">
           <div class="login-wrapper">
+            <button type="button" id="btn-back-to-intro" class="btn-back-link mb-3" style="display:inline-flex; align-items:center; gap:6px; background:none; border:none; color:var(--text-muted); font-size:0.85rem; cursor:pointer;">
+              ← Back to Public Website
+            </button>
             <div class="login-header-box text-center mb-4">
               <div class="brand-icon-lg mb-2" style="margin:0 auto; width:64px; height:64px; display:flex; align-items:center; justify-content:center; background:transparent; border:none; box-shadow:none;">
                 <img src="/images/logo.png" alt="Sulfide Sentinels App Icon" style="width:100%; height:100%; object-fit:contain; border-radius:14px; box-shadow:0 4px 14px rgba(2, 132, 199, 0.3);">
@@ -725,7 +1516,23 @@
             <div id="preshift-step-3-panel" class="wizard-panel">
               <div class="panel-box">
                 <h3 class="panel-title mb-1">STEP 1 — EXPIRY SCAN ONLY</h3>
-                <p class="text-muted text-sm mb-4">Open rear camera. Place ONLY the right-side physical expiry indicator dot inside the target frame.</p>
+                <p class="text-muted text-sm mb-3">Place ONLY the right-side physical expiry indicator dot inside the target frame.</p>
+
+                <!-- Dual Scan Mode Tabs -->
+                <div class="scan-mode-tabs mb-3" style="display:flex; gap:8px; background:rgba(255,255,255,0.04); padding:4px; border-radius:10px; border:1px solid var(--border-color);">
+                  <button type="button" class="btn-scan-mode active" id="tab-expiry-mode-camera" style="flex:1; padding:8px 12px; border:none; border-radius:8px; background:var(--primary); color:#fff; font-weight:700; font-size:0.82rem; cursor:pointer;">
+                    📷 Live Camera Stream
+                  </button>
+                  <button type="button" class="btn-scan-mode" id="tab-expiry-mode-upload" style="flex:1; padding:8px 12px; border:none; border-radius:8px; background:transparent; color:var(--text-muted); font-weight:700; font-size:0.82rem; cursor:pointer;">
+                    📁 Image Upload Dropzone
+                  </button>
+                </div>
+
+                <!-- Optical Quality Guidance Banner -->
+                <div class="optical-guidance-banner mb-3" style="background:rgba(34, 184, 230, 0.08); border:1px solid rgba(34, 184, 230, 0.25); border-radius:8px; padding:10px 14px; font-size:0.78rem; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:1.1rem;">💡</span>
+                  <span><strong>Optical Quality Guidance:</strong> Hold badge steady under direct light. Avoid harsh glare or shadows. Quality checks are screening aids and do not guarantee validated lab concentration accuracy.</span>
+                </div>
 
                 <div id="camera-error-alert" class="form-error hidden mb-3"></div>
 
@@ -757,9 +1564,13 @@
                   </button>
                 </div>
 
-                <div class="manual-upload-box mt-3">
-                  <span class="text-xs text-muted">Or upload physical badge expiry image if camera unavailable:</span>
-                  <input type="file" id="file-scan-upload" accept="image/*" class="mt-1">
+                <!-- Dropzone Upload Container -->
+                <div class="manual-upload-box mt-3" id="dropzone-expiry-box">
+                  <div class="dropzone-area p-4 text-center" style="border:2px dashed var(--border-color); border-radius:12px; background:rgba(255,255,255,0.02); cursor:pointer;">
+                    <div style="font-size:1.8rem; margin-bottom:6px;">📁</div>
+                    <span class="text-xs text-muted block mb-1">Drag &amp; drop badge expiry image here, or click to select file</span>
+                    <input type="file" id="file-scan-upload" accept="image/*" style="display:block; margin:8px auto 0 auto; max-width:240px;">
+                  </div>
                 </div>
 
                 <!-- Physical Expiry Indicator Banner -->
@@ -826,7 +1637,23 @@
             <div id="preshift-step-4-panel" class="wizard-panel">
               <div class="panel-box">
                 <h3 class="panel-title mb-1">STEP 2 — H2S SCAN</h3>
-                <p class="text-muted text-sm mb-4">Open rear camera. Align the COMPLETE physical badge (Left: H2S strip, Center: Reference scale, Right: Expiry dot) inside the frame.</p>
+                <p class="text-muted text-sm mb-3">Align the COMPLETE physical badge inside the frame.</p>
+
+                <!-- Dual Scan Mode Tabs -->
+                <div class="scan-mode-tabs mb-3" style="display:flex; gap:8px; background:rgba(255,255,255,0.04); padding:4px; border-radius:10px; border:1px solid var(--border-color);">
+                  <button type="button" class="btn-scan-mode active" id="tab-h2s-mode-camera" style="flex:1; padding:8px 12px; border:none; border-radius:8px; background:var(--primary); color:#fff; font-weight:700; font-size:0.82rem; cursor:pointer;">
+                    📷 Live Camera Stream
+                  </button>
+                  <button type="button" class="btn-scan-mode" id="tab-h2s-mode-upload" style="flex:1; padding:8px 12px; border:none; border-radius:8px; background:transparent; color:var(--text-muted); font-weight:700; font-size:0.82rem; cursor:pointer;">
+                    📁 Image Upload Dropzone
+                  </button>
+                </div>
+
+                <!-- Optical Quality Guidance Banner -->
+                <div class="optical-guidance-banner mb-3" style="background:rgba(34, 184, 230, 0.08); border:1px solid rgba(34, 184, 230, 0.25); border-radius:8px; padding:10px 14px; font-size:0.78rem; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:1.1rem;">💡</span>
+                  <span><strong>Optical Quality Guidance:</strong> Align all 3 badge regions clearly inside reticle box. Ensure uniform lighting across strip.</span>
+                </div>
 
                 <div id="h2s-camera-error-alert" class="form-error hidden mb-3"></div>
 
@@ -871,9 +1698,12 @@
                   </button>
                 </div>
 
-                <div class="manual-upload-box mt-3">
-                  <span class="text-xs text-muted">Or upload complete badge image if camera unavailable:</span>
-                  <input type="file" id="file-h2s-upload" accept="image/*" class="mt-1">
+                <div class="manual-upload-box mt-3" id="dropzone-h2s-box">
+                  <div class="dropzone-area p-4 text-center" style="border:2px dashed var(--border-color); border-radius:12px; background:rgba(255,255,255,0.02); cursor:pointer;">
+                    <div style="font-size:1.8rem; margin-bottom:6px;">📁</div>
+                    <span class="text-xs text-muted block mb-1">Drag &amp; drop complete badge image here, or click to select file</span>
+                    <input type="file" id="file-h2s-upload" accept="image/*" style="display:block; margin:8px auto 0 auto; max-width:240px;">
+                  </div>
                 </div>
 
                 <!-- H2S Analysis Display Card -->
@@ -1975,6 +2805,9 @@
   <!-- FLOATING TOAST NOTIFICATION CONTAINER -->
   <div id="toast-container" class="toast-container"></div>
 
+  <!-- THREE.JS 3D ENGINE & HERO ANIMATION -->
+  <script src="/js/three.min.js"></script>
+  <script src="/js/hero-3d.js?v=2.1"></script>
   <script src="/js/app.js"></script>
 </body>
 </html>
