@@ -564,11 +564,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const response = await fetch(fetchUrl, options);
 
     if (response.status === 401) {
+      const wasLoggedIn = !!currentUser;
       currentSessionToken = null;
       currentUser = null;
       localStorage.removeItem('sentinels_session_token');
-      showLoginView();
-      showToast('Session expired or unauthorized. Please log in.', 'error');
+      if (wasLoggedIn) {
+        showLoginView();
+        showToast('Session expired. Please log in again.', 'error');
+      } else {
+        showIntroView();
+      }
     }
 
     return response;
@@ -579,17 +584,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const userName = document.getElementById('header-user-name');
     const userRole = document.getElementById('header-user-role');
     const logoutBtn = document.getElementById('btn-logout');
+    const publicNavBar = document.getElementById('public-nav-bar');
+    const authenticatedHeaderActions = document.getElementById('authenticated-header-actions');
 
     if (currentUser) {
       if (avatar) avatar.textContent = currentUser.name ? currentUser.name.substring(0, 2).toUpperCase() : 'U';
       if (userName) userName.textContent = currentUser.name;
       if (userRole) userRole.textContent = currentUser.role === 'admin' ? '🛡️ Safety Officer' : '👤 Field Worker';
       if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+      if (publicNavBar) publicNavBar.classList.add('hidden');
+      if (authenticatedHeaderActions) authenticatedHeaderActions.classList.remove('hidden');
     } else {
       if (avatar) avatar.textContent = '--';
       if (userName) userName.textContent = 'Not Logged In';
       if (userRole) userRole.textContent = 'Guest';
       if (logoutBtn) logoutBtn.style.display = 'none';
+      if (publicNavBar) publicNavBar.classList.remove('hidden');
+      if (authenticatedHeaderActions) authenticatedHeaderActions.classList.add('hidden');
     }
   }
 
@@ -609,23 +620,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.documentElement.setAttribute('data-theme', effectiveTheme);
 
-    const headerThemeIcon = document.getElementById('header-theme-icon');
-    if (headerThemeIcon) {
-      if (theme === 'light') headerThemeIcon.textContent = '☀️';
-      else if (theme === 'dark') headerThemeIcon.textContent = '🌙';
-      else headerThemeIcon.textContent = '💻';
+    const icons = [document.getElementById('header-theme-icon'), document.getElementById('public-theme-icon')];
+    icons.forEach(icon => {
+      if (!icon) return;
+      if (effectiveTheme === 'light') icon.textContent = '🌙';
+      else icon.textContent = '☀️';
+    });
+
+    const btnPublicTheme = document.getElementById('btn-public-theme');
+    if (btnPublicTheme) {
+      btnPublicTheme.title = effectiveTheme === 'light' ? 'Switch to Dark Theme' : 'Switch to Light Theme';
     }
 
-    const themeBtns = document.querySelectorAll('.theme-option-btn');
+    const themeBtns = document.querySelectorAll('.theme-option-btn, .btn-theme-pill-opt');
     themeBtns.forEach(btn => {
-      if (btn.getAttribute('data-theme-val') === theme) {
+      const val = btn.getAttribute('data-theme-val');
+      if (val === effectiveTheme || (val === 'system' && theme === 'system')) {
         btn.classList.add('active');
-        btn.style.borderColor = 'var(--primary)';
-        btn.style.borderWidth = '2px';
       } else {
         btn.classList.remove('active');
-        btn.style.borderColor = 'var(--border-color)';
-        btn.style.borderWidth = '1px';
       }
     });
   }
@@ -646,7 +659,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  document.querySelectorAll('.theme-option-btn').forEach(btn => {
+  const btnPublicTheme = document.getElementById('btn-public-theme');
+  if (btnPublicTheme) {
+    btnPublicTheme.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const nextTheme = current === 'light' ? 'dark' : 'light';
+      applyTheme(nextTheme);
+      showToast(`Switched theme to ${nextTheme.toUpperCase()}`, 'info');
+    });
+  }
+
+  document.querySelectorAll('.theme-option-btn, .btn-theme-pill-opt').forEach(btn => {
     btn.addEventListener('click', () => {
       const val = btn.getAttribute('data-theme-val');
       if (val) {
@@ -711,6 +734,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function scrollToSection(targetHash) {
+    if (!targetHash) return;
+    const cleanId = targetHash.replace(/^#/, '');
+    const element = document.getElementById(cleanId);
+    if (element) {
+      setTimeout(() => {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
+  }
+
+  function showIntroView(options = {}) {
+    document.body.classList.add('logged-out');
+    updateHeaderProfileUI();
+
+    const workerNav = document.getElementById('worker-bottom-nav');
+    const adminNav = document.getElementById('admin-bottom-nav');
+    if (workerNav) workerNav.classList.add('hidden');
+    if (adminNav) adminNav.classList.add('hidden');
+
+    const views = document.querySelectorAll('.content-view');
+    views.forEach(v => v.classList.remove('active'));
+    const introView = document.getElementById('view-intro');
+    if (introView) introView.classList.add('active');
+
+    if (options.scrollToHash) {
+      scrollToSection(options.scrollToHash);
+    } else if (!options.keepScroll) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
   function showLoginView() {
     document.body.classList.add('logged-out');
     updateHeaderProfileUI();
@@ -725,7 +780,174 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginView = document.getElementById('view-login');
     if (loginView) loginView.classList.add('active');
     populateWorkerLoginDropdown();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  // Header Brand Logo Click Handling
+  const headerBrandClickable = document.getElementById('header-brand-clickable');
+  if (headerBrandClickable) {
+    headerBrandClickable.addEventListener('click', () => {
+      if (currentUser) {
+        if (currentUser.role === 'worker') {
+          switchView('view-worker-dashboard');
+        } else {
+          switchView('view-dashboard');
+        }
+      } else {
+        if (window.location.hash) {
+          history.pushState('', document.title, window.location.pathname + window.location.search);
+        }
+        showIntroView();
+      }
+    });
+  }
+
+  // Top-Right Header LOGIN Button Binding
+  const btnHeaderLogin = document.getElementById('btn-header-login');
+  if (btnHeaderLogin) {
+    btnHeaderLogin.addEventListener('click', () => {
+      closeMobileDrawer();
+      showLoginView();
+    });
+  }
+
+  // Mobile Drawer Toggle Button & Drawer Login Button
+  const btnMobileMenuToggle = document.getElementById('btn-mobile-menu-toggle');
+  const mobileNavDrawer = document.getElementById('mobile-nav-drawer');
+  const btnMobileDrawerLogin = document.getElementById('btn-mobile-drawer-login');
+
+  function closeMobileDrawer() {
+    if (mobileNavDrawer) mobileNavDrawer.classList.add('hidden');
+    if (btnMobileMenuToggle) btnMobileMenuToggle.classList.remove('active');
+  }
+
+  function toggleMobileDrawer() {
+    if (!mobileNavDrawer) return;
+    const isHidden = mobileNavDrawer.classList.contains('hidden');
+    if (isHidden) {
+      mobileNavDrawer.classList.remove('hidden');
+      if (btnMobileMenuToggle) btnMobileMenuToggle.classList.add('active');
+    } else {
+      closeMobileDrawer();
+    }
+  }
+
+  if (btnMobileMenuToggle) {
+    btnMobileMenuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleMobileDrawer();
+    });
+  }
+
+  if (btnMobileDrawerLogin) {
+    btnMobileDrawerLogin.addEventListener('click', () => {
+      closeMobileDrawer();
+      showLoginView();
+    });
+  }
+
+  // Close mobile drawer when clicking anywhere outside
+  document.addEventListener('click', (e) => {
+    if (mobileNavDrawer && !mobileNavDrawer.classList.contains('hidden')) {
+      if (!mobileNavDrawer.contains(e.target) && e.target !== btnMobileMenuToggle && !btnMobileMenuToggle.contains(e.target)) {
+        closeMobileDrawer();
+      }
+    }
+  });
+
+  // Bind all CTA buttons that open the login page
+  document.querySelectorAll('.btn-trigger-login, .btn-continue-login').forEach(btn => {
+    btn.addEventListener('click', () => {
+      closeMobileDrawer();
+      showLoginView();
+    });
+  });
+
+  // Back to Public Landing Page Button
+  const btnBackToIntro = document.getElementById('btn-back-to-intro');
+  if (btnBackToIntro) {
+    btnBackToIntro.addEventListener('click', () => {
+      closeMobileDrawer();
+      if (window.location.hash) {
+        history.pushState('', document.title, window.location.pathname + window.location.search);
+      }
+      showIntroView();
+    });
+  }
+
+  // Active Link Highlight Helper for Public Sections
+  function updateActivePublicNavLink(targetId) {
+    document.querySelectorAll('.public-nav-link').forEach(link => {
+      const section = link.getAttribute('data-section') || (link.getAttribute('href') ? link.getAttribute('href').replace(/^#/, '') : '');
+      if (section && section === targetId) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  }
+
+  // ScrollSpy Observer for Public Sections
+  if ('IntersectionObserver' in window) {
+    const publicSections = document.querySelectorAll('.intro-section[id], footer.intro-disclaimer[id]');
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -60% 0px',
+      threshold: 0
+    };
+
+    const sectionObserver = new IntersectionObserver((entries) => {
+      if (currentUser) return;
+      const introView = document.getElementById('view-intro');
+      if (!introView || !introView.classList.contains('active')) return;
+
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          updateActivePublicNavLink(entry.target.id);
+        }
+      });
+    }, observerOptions);
+
+    publicSections.forEach(section => sectionObserver.observe(section));
+  }
+
+  // Hash Navigation Handler for Public Landing Page Sections
+  window.addEventListener('hashchange', () => {
+    const hash = window.location.hash;
+    const isPublicHash = hash && (
+      hash.startsWith('#sec-') ||
+      ['#sec-how-it-works', '#sec-features', '#sec-sensor', '#sec-safety', '#sec-why-h2s', '#sec-roles'].includes(hash)
+    );
+    if (isPublicHash && !currentUser) {
+      closeMobileDrawer();
+      const loginView = document.getElementById('view-login');
+      if (loginView && loginView.classList.contains('active')) {
+        showIntroView({ scrollToHash: hash });
+      } else {
+        scrollToSection(hash);
+      }
+      updateActivePublicNavLink(hash.replace(/^#/, ''));
+    }
+  });
+
+  document.querySelectorAll('.public-nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+      closeMobileDrawer();
+      const href = link.getAttribute('href');
+      if (href && href.startsWith('#sec-')) {
+        const targetId = href.replace(/^#/, '');
+        updateActivePublicNavLink(targetId);
+        if (!currentUser) {
+          const loginView = document.getElementById('view-login');
+          if (loginView && loginView.classList.contains('active')) {
+            showIntroView({ scrollToHash: href });
+          } else {
+            scrollToSection(href);
+          }
+        }
+      }
+    });
+  });
 
   async function populateWorkerLoginDropdown() {
     const dropdown = document.getElementById('worker-select-user');
@@ -868,13 +1090,22 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function initAuthApp() {
+    const currentHash = window.location.hash;
+    const isPublicSectionHash = currentHash && (
+      currentHash.startsWith('#sec-') ||
+      ['#sec-how-it-works', '#sec-features', '#sec-sensor', '#sec-safety', '#sec-why-h2s', '#sec-roles'].includes(currentHash)
+    );
+
     if (!currentSessionToken) {
-      showLoginView();
+      showIntroView({ scrollToHash: isPublicSectionHash ? currentHash : null });
       return;
     }
 
     try {
-      const res = await fetchWithAuth('/api/auth/me');
+      const res = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${currentSessionToken}` },
+        cache: 'no-store'
+      });
       const json = await res.json();
       if (json.success && json.data) {
         currentUser = json.data.user;
@@ -887,14 +1118,19 @@ document.addEventListener('DOMContentLoaded', () => {
           renderWorkerDashboard();
         } else {
           switchView('view-dashboard');
-          loadDashboardStats();
-          loadWorkers();
+          refreshAllData();
         }
       } else {
-        showLoginView();
+        currentSessionToken = null;
+        currentUser = null;
+        localStorage.removeItem('sentinels_session_token');
+        showIntroView({ scrollToHash: isPublicSectionHash ? currentHash : null });
       }
     } catch (e) {
-      showLoginView();
+      currentSessionToken = null;
+      currentUser = null;
+      localStorage.removeItem('sentinels_session_token');
+      showIntroView({ scrollToHash: isPublicSectionHash ? currentHash : null });
     }
   }
 
@@ -1847,10 +2083,52 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Mode Tab Switcher: Expiry Scan (Camera vs Dropzone Upload)
+  const tabExpiryCamera = document.getElementById('tab-expiry-mode-camera');
+  const tabExpiryUpload = document.getElementById('tab-expiry-mode-upload');
+  const dropzoneExpiryBox = document.getElementById('dropzone-expiry-box');
+
+  if (tabExpiryCamera && tabExpiryUpload) {
+    tabExpiryCamera.addEventListener('click', () => {
+      tabExpiryCamera.classList.add('active');
+      tabExpiryCamera.style.background = 'var(--primary)';
+      tabExpiryCamera.style.color = '#fff';
+      tabExpiryUpload.classList.remove('active');
+      tabExpiryUpload.style.background = 'transparent';
+      tabExpiryUpload.style.color = 'var(--text-muted)';
+      if (dropzoneExpiryBox) dropzoneExpiryBox.classList.add('hidden');
+      startCamera();
+    });
+
+    tabExpiryUpload.addEventListener('click', () => {
+      tabExpiryUpload.classList.add('active');
+      tabExpiryUpload.style.background = 'var(--primary)';
+      tabExpiryUpload.style.color = '#fff';
+      tabExpiryCamera.classList.remove('active');
+      tabExpiryCamera.style.background = 'transparent';
+      tabExpiryCamera.style.color = 'var(--text-muted)';
+      if (dropzoneExpiryBox) dropzoneExpiryBox.classList.remove('hidden');
+      stopCamera();
+    });
+  }
+
+  // File Upload Handling with Validation
   if (fileScanUpload) {
     fileScanUpload.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        alert('Invalid file format. Please select a valid image file (PNG, JPG, WEBP).');
+        fileScanUpload.value = '';
+        return;
+      }
+
+      if (file.size > 15 * 1024 * 1024) {
+        alert('File size exceeds 15 MB limit. Please select a smaller badge image.');
+        fileScanUpload.value = '';
+        return;
+      }
 
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -4006,6 +4284,273 @@ document.addEventListener('DOMContentLoaded', () => {
     return isNaN(d.getTime()) ? isoStr : d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
+  // -------------------------------------------------------------
+  // BRANDED FRONTEND LOADING OVERLAY DISMISSAL
+  // -------------------------------------------------------------
+  let isLoadingOverlayDismissed = false;
+  function hideAppLoadingOverlay() {
+    if (isLoadingOverlayDismissed) return;
+    isLoadingOverlayDismissed = true;
+    const overlay = document.getElementById('app-loading-overlay');
+    if (overlay) {
+      overlay.classList.add('loading-hidden');
+      setTimeout(() => {
+        if (overlay && overlay.parentNode) {
+          overlay.style.display = 'none';
+        }
+      }, 450);
+    }
+  }
+
+  // -------------------------------------------------------------
+  // PUBLIC LANDING PAGE INTERACTIVE HARDWARE REVEAL & DEMO LOGIC
+  // -------------------------------------------------------------
+  const sensorCompData = {
+    'comp-band': {
+      id: 'COMPONENT 01 OF 06',
+      title: '15–20 mm Elastic / Velcro Wristband',
+      desc: 'Black 15–20 mm elastic or Velcro band designed for comfortable, secure attachment over work apparel or bare wrists. Provides steady, ergonomic positioning during physical labor in plant operations.',
+      specs: [
+        'Material: Heavy-duty woven elastic / Velcro',
+        'Width: 15 mm – 20 mm',
+        'Wearability: Wrist, upper arm, or chest harness'
+      ],
+      layerId: 'layer-band'
+    },
+    'comp-plate': {
+      id: 'COMPONENT 02 OF 06',
+      title: 'Flat Rectangular ABS Mounting Plate',
+      desc: 'Small, flat rectangular black plastic plate securing the chemical sensing components in a fixed orientation. Keeps the sensing strip flat for accurate smartphone optical scanning.',
+      specs: [
+        'Material: ABS / PET industrial polymer',
+        'Profile: Ultra-thin 2 mm rigid frame',
+        'Mounting: Snap-lock chemical strip holder'
+      ],
+      layerId: 'layer-plate'
+    },
+    'comp-strip': {
+      id: 'COMPONENT 03 OF 06',
+      title: 'Replaceable H₂S Sensing Strip',
+      desc: 'Replaceable chemical colorimetric strip chemically engineered to react specifically to Hydrogen Sulfide (H₂S) gas. Shifts color from pale yellow/cream to dark brown/black proportionally to exposure.',
+      specs: [
+        'Sensing Method: Passive colorimetric chemical reaction',
+        'Specificity: Calibrated for Hydrogen Sulfide (H₂S)',
+        'Replacement: Shift-based replaceable insert'
+      ],
+      layerId: 'layer-strip'
+    },
+    'comp-scale': {
+      id: 'COMPONENT 04 OF 06',
+      title: 'Printed Reference Color Scale',
+      desc: 'Factory-calibrated printed color gradient swatches (0 ppm, 5 ppm, 15 ppm, 30 ppm, 50+ ppm) located directly on the badge frame. Allows smartphone algorithms to normalize lighting variance.',
+      specs: [
+        'Calibration: ISO colorimetric reference swatches',
+        'Function: Ambient optical light normalization',
+        'Range: 0.0 ppm – 50.0+ ppm H₂S'
+      ],
+      layerId: 'layer-strip'
+    },
+    'comp-expiry': {
+      id: 'COMPONENT 05 OF 06',
+      title: 'Expiry Indicator Region',
+      desc: 'Integrated chemical storage validity check spot. Evaluates whether the sensing strip has exceeded its shelf storage life or suffered ambient degradation prior to shift deployment.',
+      specs: [
+        'State Check: Pre-shift camera validation',
+        'Visual Indicator: Color spot change (Green OK / Red Expired)',
+        'Safety Check: Blocks expired strip scan entry'
+      ],
+      layerId: 'layer-strip'
+    },
+    'comp-membrane': {
+      id: 'COMPONENT 06 OF 06',
+      title: 'Gas-Permeable Protective Membrane',
+      desc: 'Thin microporous membrane that allows H₂S gas access to the sensing substrate while helping protect the area from liquid water splash, sweat, and environmental dust in plant environments.',
+      specs: [
+        'Permeability: Micro-porous H₂S gas diffusion',
+        'Protection: Liquid splash, sweat, & heavy dust defense',
+        'Scope: Ambient workplace screening aid'
+      ],
+      layerId: 'layer-membrane'
+    }
+  };
+
+  const sensorTabBtns = document.querySelectorAll('.sensor-tab-btn');
+  const compBadgeId = document.getElementById('comp-badge-id');
+  const compDetailTitle = document.getElementById('comp-detail-title');
+  const compDetailDesc = document.getElementById('comp-detail-desc');
+  const compSpecList = document.getElementById('comp-spec-list');
+
+  sensorTabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.component;
+      const data = sensorCompData[key];
+      if (!data) return;
+
+      sensorTabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      if (compBadgeId) compBadgeId.textContent = data.id;
+      if (compDetailTitle) compDetailTitle.textContent = data.title;
+      if (compDetailDesc) compDetailDesc.textContent = data.desc;
+      if (compSpecList) {
+        compSpecList.innerHTML = data.specs.map(s => {
+          const parts = s.split(':');
+          return `<div class="spec-chip"><strong>${escapeHtml(parts[0])}:</strong> ${escapeHtml(parts[1] || '')}</div>`;
+        }).join('');
+      }
+
+      // Highlight schematic layer
+      document.querySelectorAll('.schematic-layer').forEach(l => l.classList.remove('active-highlight'));
+      const targetLayer = document.getElementById(data.layerId);
+      if (targetLayer) targetLayer.classList.add('active-highlight');
+    });
+  });
+
+  // Hotspot buttons in Exploded Showcase
+  const hotspotBtns = document.querySelectorAll('.exploded-hotspot-btn');
+  hotspotBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.component;
+      hotspotBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const data = sensorCompData[key];
+      if (!data) return;
+      if (compBadgeId) compBadgeId.textContent = data.id;
+      if (compDetailTitle) compDetailTitle.textContent = data.title;
+      if (compDetailDesc) compDetailDesc.textContent = data.desc;
+      if (compSpecList) {
+        compSpecList.innerHTML = data.specs.map(s => {
+          const parts = s.split(':');
+          return `<div class="spec-chip"><strong>${escapeHtml(parts[0])}:</strong> ${escapeHtml(parts[1] || '')}</div>`;
+        }).join('');
+      }
+    });
+  });
+
+  // "From Color to Insight" Educational Demo Stage
+  const demoLevelBtns = document.querySelectorAll('.btn-level-select');
+  const demoDurationSelect = document.getElementById('demo-shift-duration');
+  const durationBtns = document.querySelectorAll('.btn-duration-select');
+  const demoStripColorZone = document.getElementById('demo-strip-color-zone');
+  const demoHexTag = document.getElementById('demo-hex-tag');
+  const demoPpmResult = document.getElementById('demo-ppm-result');
+  const demoCalcFormula = document.getElementById('demo-calc-formula');
+  const demoStatusPill = document.getElementById('demo-status-pill');
+  const detectedSwatch = document.getElementById('detected-swatch-box');
+  const detectedHexVal = document.getElementById('detected-hex-val');
+  const detectedRgbVal = document.getElementById('detected-rgb-val');
+  const demoDosageVal = document.getElementById('demo-dosage-val');
+
+  function hexToRgbStr(hex) {
+    const cleanHex = hex.replace('#', '');
+    const r = parseInt(cleanHex.substring(0, 2), 16) || 0;
+    const g = parseInt(cleanHex.substring(2, 4), 16) || 0;
+    const b = parseInt(cleanHex.substring(4, 6), 16) || 0;
+    return `RGB (${r}, ${g}, ${b})`;
+  }
+
+  function updateDemoState() {
+    const activeBtn = document.querySelector('.btn-level-select.active');
+    if (!activeBtn) return;
+    const ppm = parseFloat(activeBtn.dataset.ppm || '0');
+    const hex = activeBtn.dataset.hex || '#FEF9C3';
+    const hrs = parseFloat(demoDurationSelect ? demoDurationSelect.value : '8');
+
+    if (demoStripColorZone) demoStripColorZone.style.backgroundColor = hex;
+    if (demoHexTag) demoHexTag.textContent = hex;
+    if (demoPpmResult) demoPpmResult.textContent = `${ppm.toFixed(1)} ppm`;
+    if (detectedSwatch) detectedSwatch.style.backgroundColor = hex;
+    if (detectedHexVal) detectedHexVal.textContent = hex;
+    if (detectedRgbVal) detectedRgbVal.textContent = hexToRgbStr(hex);
+
+    const totalDosage = (ppm * hrs).toFixed(1);
+    if (demoDosageVal) demoDosageVal.textContent = `${totalDosage} ppm·h`;
+    if (demoCalcFormula) {
+      demoCalcFormula.innerHTML = `${ppm.toFixed(1)} ppm × ${hrs.toFixed(1)} hrs`;
+    }
+
+    const steps = document.querySelectorAll('.scale-step');
+    steps.forEach(s => s.classList.remove('active'));
+    if (ppm === 0) document.getElementById('scale-step-0')?.classList.add('active');
+    else if (ppm <= 10) document.getElementById('scale-step-5')?.classList.add('active');
+    else if (ppm <= 25) document.getElementById('scale-step-15')?.classList.add('active');
+    else if (ppm <= 35) document.getElementById('scale-step-30')?.classList.add('active');
+    else document.getElementById('scale-step-50')?.classList.add('active');
+
+    if (demoStatusPill) {
+      if (ppm === 0) {
+        demoStatusPill.className = 'res-status-pill status-safe';
+        demoStatusPill.textContent = 'CLEAN BASELINE';
+      } else if (ppm < 10) {
+        demoStatusPill.className = 'res-status-pill status-safe';
+        demoStatusPill.textContent = 'SAFE SHIFT EXPOSURE';
+      } else if (ppm < 25) {
+        demoStatusPill.className = 'res-status-pill status-warn';
+        demoStatusPill.textContent = 'WARNING: ELEVATED GAS';
+      } else {
+        demoStatusPill.className = 'res-status-pill status-danger';
+        demoStatusPill.textContent = 'CRITICAL: THRESHOLD EXCEEDED';
+      }
+    }
+  }
+
+  demoLevelBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      demoLevelBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      updateDemoState();
+    });
+  });
+
+  durationBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      durationBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const hours = btn.dataset.hours || '8';
+      if (demoDurationSelect) demoDurationSelect.value = hours;
+      updateDemoState();
+    });
+  });
+
+  if (demoDurationSelect) {
+    demoDurationSelect.addEventListener('change', updateDemoState);
+  }
+
+  // Role Experience Preview Switcher
+  const btnPrevWorker = document.getElementById('btn-preview-worker');
+  const btnPrevAdmin = document.getElementById('btn-preview-admin');
+  const panelPrevWorker = document.getElementById('panel-preview-worker');
+  const panelPrevAdmin = document.getElementById('panel-preview-admin');
+
+  if (btnPrevWorker && btnPrevAdmin) {
+    btnPrevWorker.addEventListener('click', () => {
+      btnPrevWorker.classList.add('active');
+      btnPrevAdmin.classList.remove('active');
+      if (panelPrevWorker) panelPrevWorker.classList.remove('hidden');
+      if (panelPrevAdmin) panelPrevAdmin.classList.add('hidden');
+    });
+
+    btnPrevAdmin.addEventListener('click', () => {
+      btnPrevAdmin.classList.add('active');
+      btnPrevWorker.classList.remove('active');
+      if (panelPrevAdmin) panelPrevAdmin.classList.remove('hidden');
+      if (panelPrevWorker) panelPrevWorker.classList.add('hidden');
+    });
+  }
+
   // Initial Load
-  refreshAllData();
+  try {
+    refreshAllData();
+  } catch (err) {
+    console.warn('Initial refreshAllData warning:', err);
+  }
+
+  // Dismiss loading overlay smoothly
+  hideAppLoadingOverlay();
+  setTimeout(hideAppLoadingOverlay, 500);
+  setTimeout(hideAppLoadingOverlay, 1500);
+
+  window.addEventListener('error', hideAppLoadingOverlay);
+  window.addEventListener('unhandledrejection', hideAppLoadingOverlay);
 });
